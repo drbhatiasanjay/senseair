@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "SenseAir",
+    "slug": "senseair",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#060a13"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.axsolvex.senseair"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#060a13"
+      },
+      "package": "com.axsolvex.senseair"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "senseair",
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}
