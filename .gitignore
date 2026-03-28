@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+node_modules/
+dist/
+.cache/
+.memsearch/
+*.pkl
+*.exe
+data/
+serial_output.txt
+esp-csi/
+Espressif/
