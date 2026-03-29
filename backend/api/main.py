@@ -20,7 +20,7 @@ from api.models.schemas import (
     SensingResponse,
     SystemInfo,
 )
-from api.routes import health, history, sensing
+from api.routes import auth, health, history, sensing
 
 START_TIME = time.time()
 
@@ -62,6 +62,7 @@ app.state.last_push_time = None
 
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["health"])
+app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(sensing.router, prefix="/api", tags=["sensing"])
 app.include_router(history.router, prefix="/api", tags=["history"])
 

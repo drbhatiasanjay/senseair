@@ -4,16 +4,17 @@ import asyncio
 import time
 from datetime import datetime
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 
+from api.deps import require_auth, require_edge_key
 from api.models.schemas import SensingPush, SensingResponse, SystemInfo
 
 router = APIRouter()
 
 
-@router.post("/sensing/push", response_model=SensingResponse)
+@router.post("/sensing/push", response_model=SensingResponse, dependencies=[Depends(require_edge_key)])
 async def push_sensing_data(data: SensingPush, request: Request):
-    """Receive sensing data from edge agent and broadcast to clients."""
+    """Receive sensing data from edge agent (requires X-API-Key header)."""
     state_dict = data.model_dump()
     state_dict["timestamp"] = data.timestamp.isoformat()
     state_dict["type"] = "update"
@@ -41,8 +42,8 @@ async def push_sensing_data(data: SensingPush, request: Request):
 
 
 @router.get("/sensing/current")
-async def get_current_state(request: Request):
-    """Get the latest sensing state."""
+async def get_current_state(request: Request, email: str = Depends(require_auth)):
+    """Get the latest sensing state (requires login)."""
     if request.app.state.latest:
         return request.app.state.latest
     return {"status": "no_data", "message": "No edge agent connected yet"}

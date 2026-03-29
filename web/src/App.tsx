@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useWebSocket } from './hooks/useWebSocket'
 import { Avatar } from './components/Avatar'
+import { Login } from './components/Login'
 import { StatusCard } from './components/StatusCard'
 import { SubcarrierChart } from './components/SubcarrierChart'
 
@@ -17,8 +18,21 @@ function presenceColor(p: string) {
 }
 
 export default function App() {
-  const { state, wsConnected } = useWebSocket()
+  const [token, setToken] = useState(localStorage.getItem('senseair_token') || '')
+  const [userEmail, setUserEmail] = useState(localStorage.getItem('senseair_email') || '')
+  const { state, wsConnected } = useWebSocket(token)
   const [tab, setTab] = useState<Tab>('visual')
+
+  if (!token) {
+    return <Login onLogin={(t, e) => { setToken(t); setUserEmail(e) }} />
+  }
+
+  const logout = () => {
+    localStorage.removeItem('senseair_token')
+    localStorage.removeItem('senseair_email')
+    setToken('')
+    setUserEmail('')
+  }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'visual', label: 'Visual' },
@@ -43,6 +57,13 @@ export default function App() {
           }}>
             {wsConnected ? 'LIVE' : 'OFFLINE'}
           </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{userEmail}</span>
+          <button onClick={logout} className="text-xs px-3 py-1 rounded-lg" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+            Logout
+          </button>
         </div>
 
         {/* Tabs */}

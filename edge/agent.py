@@ -69,9 +69,10 @@ def parse_csi_from_line(line):
 
 
 class EdgeAgent:
-    def __init__(self, api_url: str, model_path: str, device_id: str = "default"):
+    def __init__(self, api_url: str, model_path: str, device_id: str = "default", api_key: str = "senseair-edge-2026"):
         self.api_url = api_url.rstrip('/')
         self.device_id = device_id
+        self.api_key = api_key
         self.model_data = None
 
         # Buffers
@@ -167,6 +168,7 @@ class EdgeAgent:
             resp = requests.post(
                 f"{self.api_url}/api/sensing/push",
                 json=data,
+                headers={"X-API-Key": self.api_key},
                 timeout=5,
             )
             if resp.status_code != 200:

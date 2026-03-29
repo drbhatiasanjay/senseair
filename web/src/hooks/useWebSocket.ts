@@ -44,7 +44,7 @@ const INITIAL_STATE: SensingState = {
 
 const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`
 
-export function useWebSocket() {
+export function useWebSocket(token?: string) {
   const [state, setState] = useState<SensingState>(INITIAL_STATE)
   const [wsConnected, setWsConnected] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
@@ -89,7 +89,9 @@ export function useWebSocket() {
 
   const poll = useCallback(async () => {
     try {
-      const resp = await fetch(`${API_URL}/api/sensing/current`)
+      const headers: Record<string, string> = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      const resp = await fetch(`${API_URL}/api/sensing/current`, { headers })
       if (resp.ok) {
         const data = await resp.json()
         if (data.status !== 'no_data') {
