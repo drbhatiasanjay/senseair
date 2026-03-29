@@ -16,6 +16,7 @@ router = APIRouter()
 ALLOWED_EMAILS = {
     "gargangel2233@gmail.com",
     "asifsayed245@gmail.com",
+    "drbhatiasanjay@gmail.com",
 }
 
 # Secret for signing tokens (use env var in production)
