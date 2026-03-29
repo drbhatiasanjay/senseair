@@ -42,48 +42,88 @@ const INITIAL_STATE: SensingState = {
   connected: false,
 }
 
+const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`
+
 export function useWebSocket() {
   const [state, setState] = useState<SensingState>(INITIAL_STATE)
   const [wsConnected, setWsConnected] = useState(false)
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  const connect = useCallback(() => {
+  // Try WebSocket first (for local dev), fall back to HTTP polling (for Vercel)
+  const connectWs = useCallback(() => {
     const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000`
-    const ws = new WebSocket(`${wsUrl}/ws/live`)
+    try {
+      const ws = new WebSocket(`${wsUrl}/ws/live`)
 
-    ws.onopen = () => {
-      setWsConnected(true)
-      console.log('WebSocket connected')
+      ws.onopen = () => {
+        setWsConnected(true)
+        // Stop polling if WS connects
+        if (intervalRef.current) clearInterval(intervalRef.current)
+      }
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        if (data.type === 'ping') return
+        setState((prev) => ({ ...prev, ...data, connected: true }))
+      }
+
+      ws.onclose = () => {
+        setWsConnected(false)
+        setState((prev) => ({ ...prev, connected: false }))
+        // Fall back to polling
+        startPolling()
+      }
+
+      ws.onerror = () => {
+        ws.close()
+      }
+
+      wsRef.current = ws
+    } catch {
+      // WebSocket not available, use polling
+      startPolling()
     }
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.type === 'ping') return
-      setState((prev) => ({ ...prev, ...data, connected: true }))
-    }
-
-    ws.onclose = () => {
-      setWsConnected(false)
-      setState((prev) => ({ ...prev, connected: false }))
-      // Reconnect after 3s
-      reconnectRef.current = setTimeout(connect, 3000)
-    }
-
-    ws.onerror = () => {
-      ws.close()
-    }
-
-    wsRef.current = ws
   }, [])
 
+  const poll = useCallback(async () => {
+    try {
+      const resp = await fetch(`${API_URL}/api/sensing/current`)
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.status !== 'no_data') {
+          setState((prev) => ({ ...prev, ...data, connected: true }))
+          setWsConnected(true)
+        }
+      }
+    } catch {
+      setWsConnected(false)
+    }
+  }, [])
+
+  const startPolling = useCallback(() => {
+    if (intervalRef.current) return
+    poll()
+    intervalRef.current = setInterval(poll, 1000)
+  }, [poll])
+
   useEffect(() => {
-    connect()
+    // Try WebSocket first
+    connectWs()
+    // Also start polling as fallback after 3s if WS doesn't connect
+    reconnectRef.current = setTimeout(() => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        startPolling()
+      }
+    }, 3000)
+
     return () => {
       clearTimeout(reconnectRef.current)
+      clearInterval(intervalRef.current)
       wsRef.current?.close()
     }
-  }, [connect])
+  }, [connectWs, startPolling])
 
   return { state, wsConnected }
 }
