@@ -46,7 +46,7 @@ export function useWebSocket() {
   const [state, setState] = useState<SensingState>(INITIAL_STATE)
   const [wsConnected, setWsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
-  const reconnectRef = useRef<ReturnType<typeof setTimeout>>()
+  const reconnectRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const connect = useCallback(() => {
     const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000`
