@@ -42,7 +42,7 @@ const INITIAL_STATE: SensingState = {
   connected: false,
 }
 
-const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`
+const API_URL = import.meta.env.VITE_API_URL || 'https://backend-gules-three-58.vercel.app'
 
 export function useWebSocket(token?: string) {
   const [state, setState] = useState<SensingState>(INITIAL_STATE)

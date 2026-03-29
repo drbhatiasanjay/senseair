@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`
+const API_URL = import.meta.env.VITE_API_URL || 'https://backend-gules-three-58.vercel.app'
 
 interface LoginProps {
   onLogin: (token: string, email: string) => void
